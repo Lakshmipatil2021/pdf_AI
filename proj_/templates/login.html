@@ -56,23 +56,28 @@
         <input type="email" id="email" placeholder="Email: test@example.com" required>
         <input type="password" id="password" placeholder="Password: 123" required>
         <button onclick="login()">Login</button>
+        <button onclick="googleSignIn()">Sign in with Google</button>
         <a href="/register">New user? Register</a>
     </div>
+
+    <!-- Firebase libraries -->
     <script src="https://www.gstatic.com/firebasejs/8.6.8/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.6.8/firebase-auth.js"></script>
+    <script src="https://apis.google.com/js/platform.js" async defer></script>
     <script>
         // Your web app's Firebase configuration
         var firebaseConfig = {
-            apiKey: "AIzaSyDoX67U35bywWdVdlfzx7djaWKLtPNkluI",
-            authDomain: "pdfai-a4d51.firebaseapp.com",
-            projectId: "pdfai-a4d51",
-            storageBucket: "pdfai-a4d51.appspot.com",
-            messagingSenderId: "536843116529",
-            appId: "1:536843116529:web:92d32b07a5aa58439a2e50",
+            apiKey: "YOUR_API_KEY",
+            authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
+            projectId: "YOUR_PROJECT_ID",
+            storageBucket: "YOUR_PROJECT_ID.appspot.com",
+            messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
+            appId: "YOUR_APP_ID",
         };
         // Initialize Firebase
         firebase.initializeApp(firebaseConfig);
 
+        // Function to handle email/password login
         function login() {
             const email = document.getElementById('email').value;
             const password = document.getElementById('password').value;
@@ -106,9 +111,45 @@
                     alert("Invalid login. Please register.");
                 });
         }
+
+        // Function to handle Google Sign-In
+        function googleSignIn() {
+            var provider = new firebase.auth.GoogleAuthProvider();
+            firebase.auth().signInWithPopup(provider)
+                .then((result) => {
+                    // This gives you a Google Access Token. You can use it to access the Google API.
+                    var token = result.credential.accessToken;
+                    var user = result.user;
+
+                    user.getIdToken().then((idToken) => {
+                        fetch('/login', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json'
+                            },
+                            body: JSON.stringify({ idToken })
+                        })
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.success) {
+                                window.location.href = '/';
+                            } else {
+                                alert(data.message);
+                            }
+                        });
+                    });
+                })
+                .catch((error) => {
+                    console.error("Error during Google Sign-In:", error);
+                    alert("Google Sign-In failed. Please try again.");
+                });
+        }
     </script>
 </body>
 </html>
+
+
+
 
 
 
